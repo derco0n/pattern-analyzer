@@ -41,7 +41,8 @@ static void printHelp(char *bin){
 }
 
 int main (int argc, char *argv[]) {
-    
+    cout << "patten-analyzer - version " << analyzer::versioninfo << std::endl;
+
     if (argc != 3) {
         printHelp(argv[0]);
         return 1;
