@@ -1,6 +1,6 @@
 #include "analyzer.h"
 
-const std::string analyzer::versioninfo="0.22";
+const std::string analyzer::versioninfo="0.23";
 
 //Constructor
 analyzer::analyzer(FILE *infile, FILE *outfile) {
@@ -124,8 +124,8 @@ uint64_t analyzer::patterntocombinations(std::string pattern){
 
         if (c == 's') {
             //not a linebreak but everything else
-            //assuming special char
-            factors.push_back(34);
+            //assuming special char: ! "#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+            factors.push_back(33);
             continue;
         }
     }
