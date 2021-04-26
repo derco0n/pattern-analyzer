@@ -1,6 +1,6 @@
 #include "analyzer.h"
 
-const std::string analyzer::versioninfo="0.21";
+const std::string analyzer::versioninfo="0.22";
 
 //Constructor
 analyzer::analyzer(FILE *infile, FILE *outfile) {
@@ -95,6 +95,54 @@ std::string analyzer::findpattern(char * txt, int len, int mode){
     return myreturn;
 }
 
+uint64_t analyzer::patterntocombinations(std::string pattern){
+    
+    std::vector<uint64_t> factors;
+
+    for (const char &c : pattern){ //iterate through all patterns (const=>readonly)
+        if (c == '?') {
+            continue;  //We don't need the escape character here
+        }
+
+        if (c=='h' || c=='H'){
+           //0123456789abcdef || 0123456789ABCDEF
+           factors.push_back(16);           
+           continue;
+        }
+
+        if (c=='l' || c=='u') {
+            //lowercase letter || uppercase letter
+            factors.push_back(26);
+            continue;
+        }
+
+        if (c=='d'){
+            //decimal number
+            factors.push_back(10);
+            continue;
+        }
+
+        if (c == 's') {
+            //not a linebreak but everything else
+            //assuming special char
+            factors.push_back(34);
+            continue;
+        }
+    }
+
+    if (factors.size()==0){
+        return 0; //No factors found, return 0
+    }
+
+    //calculate the number of permutations:    
+    uint64_t permutations = 1;
+    for (const uint64_t &f : factors){        
+        permutations = permutations * f; //multiply the result with each factor
+    }
+
+    return permutations;
+}
+
 void analyzer::parse(void) {
     // Parses the input file for patterns    
     std::vector<pw_pattern> patterns;  //a vector that will contain the patterns we found (basically an arraylist)
@@ -138,6 +186,7 @@ void analyzer::parse(void) {
                     else {
                         new_pattern.type="alternative";
                     }
+                    new_pattern.combinations = patterntocombinations(new_pattern.pattern); //Insert the number of possible permutations
 
                     //And add it to the list
                     patterns.push_back(new_pattern);
@@ -159,8 +208,8 @@ void analyzer::parse(void) {
    );
 
         
-    std::cout << "occurance;patterntype;pattern" << std::endl;
-    std::cout << "#############################" << std::endl;
+    std::cout << "occurance;patterntype;permutations;pattern" << std::endl;
+    std::cout << "##########################################" << std::endl;
     //Iterate through all patterns again...
     for (pw_pattern& p: patterns){ //... by reference pointer (basically a foreach with write-access)
         // ... and output the results
